@@ -2,7 +2,7 @@ from pathlib import Path
 
 import typer
 import yaml
-from PIL import Image, ImageEnhance, ImageOps, ImageChops
+from PIL import Image, ImageChops
 from rich.console import Console
 from rich.progress import track
 
@@ -48,7 +48,7 @@ def change_icon_color(base_image, hex_color):
     color_image = Image.new("RGBA", base_image.size, (r, g, b, 255))
 
     # Extract the alpha channel from the base image
-    alpha_channel = base_image.split()[3]
+    alpha_channel = base_image.getchannel("A")
 
     # Create a new image with the solid color and the alpha channel as a mask
     masked_color_image = Image.composite(color_image, base_image, alpha_channel)
