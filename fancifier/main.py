@@ -44,15 +44,14 @@ def change_icon_color(base_image, hex_color):
     # Convert hex color to RGB
     r, g, b = tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
 
-    # Desaturate the image
-    enhancer = ImageEnhance.Color(base_image)
-    desaturated_image = enhancer.enhance(0)
+    # Convert the image to grayscale
+    grayscale_image = base_image.convert("L")
 
-    # Create a new image with the target color
-    color_overlay = Image.new("RGBA", base_image.size, (r, g, b, 255))
+    # Use ImageOps.colorize to apply the new color
+    colorized_image = ImageOps.colorize(grayscale_image, black=(0, 0, 0), white=(r, g, b))
 
-    # Composite the color overlay with the desaturated image using the original alpha channel
-    new_image = Image.composite(color_overlay, desaturated_image, base_image.split()[3])
+    # Add the original alpha channel to the colorized image
+    new_image = Image.merge("RGBA", (*colorized_image.split()[:3], base_image.split()[3]))
 
     return new_image
 
