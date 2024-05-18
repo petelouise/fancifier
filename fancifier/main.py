@@ -2,7 +2,7 @@ from pathlib import Path
 
 import typer
 import yaml
-from PIL import Image, ImageChops
+from PIL import Image
 from rich.console import Console
 from rich.progress import track
 
