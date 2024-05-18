@@ -44,16 +44,14 @@ def change_icon_color(base_image, hex_color):
     # Convert hex color to RGB
     r, g, b = tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
 
-    # Split the image into RGBA channels
-    r_channel, g_channel, b_channel, a_channel = base_image.split()
+    # Convert the image to grayscale
+    grayscale_image = base_image.convert("L")
 
-    # Create new RGB channels with the target color
-    r_channel = r_channel.point(lambda _: r)
-    g_channel = g_channel.point(lambda _: g)
-    b_channel = b_channel.point(lambda _: b)
+    # Create a new image with the target color
+    colored_image = Image.new("RGBA", base_image.size, (r, g, b, 255))
 
-    # Merge the new RGB channels with the original alpha channel
-    new_image = Image.merge("RGBA", (r_channel, g_channel, b_channel, a_channel))
+    # Composite the colored image with the grayscale image using the original alpha channel
+    new_image = Image.composite(colored_image, base_image, base_image)
 
     return new_image
 
