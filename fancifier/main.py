@@ -1,7 +1,7 @@
 import typer
 import yaml
 from pathlib import Path
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageEnhance
 from rich.console import Console
 from rich.progress import track
 
@@ -9,18 +9,23 @@ app = typer.Typer()
 console = Console()
 
 
+def enhance_grayscale(image):
+    enhancer = ImageEnhance.Contrast(image)
+    image = enhancer.enhance(2)  # Adjust contrast
+    enhancer = ImageEnhance.Brightness(image)
+    image = enhancer.enhance(1.5)  # Adjust brightness
+    return image
+
+
 @app.command()
 def generate_icons(color_file: Path, base_icon: Path, output_dir: Path):
-    # Load colors from the YAML file
     with open(color_file, "r") as f:
         colors = yaml.safe_load(f)["colors"]
 
-    # Create output directory if it doesn't exist
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Load the base icon image
     base_image = Image.open(base_icon).convert("RGBA")
     grayscale_image = base_image.convert("L")
+    grayscale_image = enhance_grayscale(grayscale_image)
     grayscale_image.show()
 
     console.print(
@@ -28,10 +33,8 @@ def generate_icons(color_file: Path, base_icon: Path, output_dir: Path):
     )
 
     for color in track(colors, description="Processing..."):
-        # Create a colored version of the base icon
         colored_image = change_icon_color(grayscale_image, color)
-        colored_image.show()
-        # Save the colored icon as .icns
+        # colored_image.show()
         icon_path = output_dir / f"icon_{color.lstrip('#')}.icns"
         save_icns(colored_image, icon_path)
         console.print(
@@ -42,19 +45,13 @@ def generate_icons(color_file: Path, base_icon: Path, output_dir: Path):
 
 
 def change_icon_color(grayscale_image, hex_color):
-    # Convert hex color to RGB
     rgb_color = tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
-
     colorized_image = ImageOps.colorize(grayscale_image, black="black", white=rgb_color)
-
-    # # Convert back to RGBA
     rgba_image = colorized_image.convert("RGBA")
-
     return rgba_image
 
 
 def save_icns(image, path):
-    # Save image as .icns
     image.save(path, format="ICNS")
 
 
