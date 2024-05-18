@@ -2,7 +2,7 @@ from pathlib import Path
 
 import typer
 import yaml
-from PIL import Image, ImageEnhance, ImageOps
+from PIL import Image, ImageEnhance, ImageOps, ImageChops
 from rich.console import Console
 from rich.progress import track
 
@@ -44,14 +44,17 @@ def change_icon_color(base_image, hex_color):
     # Convert hex color to RGB
     r, g, b = tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
 
-    # Convert the image to grayscale
-    grayscale_image = base_image.convert("L")
+    # Create a solid color image
+    color_image = Image.new("RGBA", base_image.size, (r, g, b, 255))
 
-    # Use ImageOps.colorize to apply the new color
-    colorized_image = ImageOps.colorize(grayscale_image, black=(0, 0, 0), white=(r, g, b))
+    # Extract the alpha channel from the base image
+    alpha_channel = base_image.split()[3]
 
-    # Add the original alpha channel to the colorized image
-    new_image = Image.merge("RGBA", (*colorized_image.split()[:3], base_image.split()[3]))
+    # Create a new image with the solid color and the alpha channel as a mask
+    masked_color_image = Image.composite(color_image, base_image, alpha_channel)
+
+    # Blend the masked color image with the original image to retain details
+    new_image = Image.alpha_composite(base_image, masked_color_image)
 
     return new_image
 
