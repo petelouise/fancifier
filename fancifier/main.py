@@ -44,20 +44,16 @@ def change_icon_color(base_image, hex_color):
     # Convert hex color to RGB
     r, g, b = tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
 
-    # Convert image to HSV
-    hsv_image = base_image.convert("HSV")
-    h, s, v = hsv_image.split()
+    # Split the image into RGBA channels
+    r_channel, g_channel, b_channel, a_channel = base_image.split()
 
-    # Replace the hue with the target color's hue
-    base_r, base_g, base_b = base_image.split()
-    base_hue = Image.new("L", base_image.size, r)
-    base_hue = base_hue.point(lambda _: r)
+    # Create new RGB channels with the target color
+    r_channel = r_channel.point(lambda _: r)
+    g_channel = g_channel.point(lambda _: g)
+    b_channel = b_channel.point(lambda _: b)
 
-    # Combine the new hue with the original saturation and value
-    new_hsv_image = Image.merge("HSV", (base_hue, s, v))
-
-    # Convert back to RGBA
-    new_image = new_hsv_image.convert("RGBA")
+    # Merge the new RGB channels with the original alpha channel
+    new_image = Image.merge("RGBA", (r_channel, g_channel, b_channel, a_channel))
 
     return new_image
 
