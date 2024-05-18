@@ -2,7 +2,7 @@ from pathlib import Path
 
 import typer
 import yaml
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageOps
 from rich.console import Console
 from rich.progress import track
 
